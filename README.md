@@ -6,5 +6,5 @@
 * Lucas Rodrigues Baptista - ...
 
 # Objetivo:
-* Desenvolver um comunicação síncrona entre duas plataformas Arduino
-* Este projeto ficou responsável pelo desenvolvimento do Emissor de dados com paridade ímpar
+* Desenvolver uma comunicação síncrona entre duas plataformas Arduino
+* Este grupo ficou responsável pelo desenvolvimento do Emissor de dados com paridade ímpar
