@@ -3,11 +3,13 @@
 
 // Alunos:
 // - João Victor De Bortoli Prado - 13672071
-// - Lucas Rodrigues Baptista - ...
+// - Lucas Rodrigues Baptista - 15577631
 
 // Atribuindo pinos e baud rate
 
 #define PINO_TX 13
+#define PINO_CLK 5
+
 #define BAUD_RATE 1
 
 #define PINO_RTS 7
@@ -28,6 +30,11 @@ volatile int indice_bit = 0;
 
 volatile byte frame[9]; // 8 bits + paridade
 
+// Indica o valor da saida do clock
+// Os valores sao escritos na borda de subida do clock
+// e lidos na borda de descida
+
+volatile byte clk = LOW;
 
 // Maquina de estados do transmissor:
 // IDLE -> aguardando caractere
@@ -66,26 +73,41 @@ bool bitParidade(char dado){
 
 ISR(TIMER1_COMPA_vect){
 
-  if(estado == TRANSMITINDO){
+  if (estado != TRANSMITINDO)
+    return;
 
+  if(clk == LOW){
+
+    // Escreve o próximo bit na saida
     digitalWrite(PINO_TX, frame[indice_bit]);
 
     // Serial.print("Enviando bit: ");
     // Serial.println(frame[indice_bit]);
 
+    clk = HIGH;
+  }
+  else {
+
+    // Troca para o proximo bit
     indice_bit++;
 
-    if(indice_bit > 8){
+    clk = LOW;
+  }
 
-      // Terminou transmissão
+  digitalWrite(PINO_CLK, clk);
 
-      paraTemporizador();
+  if(indice_bit > 8){
 
-      digitalWrite(PINO_RTS, LOW); // encerra handshake
+    // Terminou transmissão
 
-      estado = FINALIZANDO;
-      //Serial.println("Transmissao finalizada");
-    }
+    paraTemporizador();
+
+    estado = FINALIZANDO;
+    //Serial.println("Transmissao finalizada");
+
+    indice_bit = 0;
+
+    digitalWrite(PINO_RTS, LOW); // encerra handshake
   }
 }
 
@@ -106,6 +128,10 @@ void setup(){
 
   pinMode(PINO_TX, OUTPUT);
 
+  // Configura o pino CLK como saida
+
+  pinMode(PINO_CLK, OUTPUT);
+
   // Inicializa RTS e CTS
 
   pinMode(PINO_RTS, OUTPUT);
@@ -113,6 +139,7 @@ void setup(){
 
   digitalWrite(PINO_TX, LOW);
   digitalWrite(PINO_RTS, LOW);
+  digitalWrite(PINO_CLK, LOW);
 
   // Configura timer
 
