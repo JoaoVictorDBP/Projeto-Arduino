@@ -2,7 +2,7 @@
 
 
 # Integrantes:
-* João Victor De Bortoli Prado - ...
+* João Victor De Bortoli Prado - 13672071
 * Lucas Rodrigues Baptista - ...
 
 # Objetivo:
