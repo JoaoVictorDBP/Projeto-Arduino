@@ -10,7 +10,7 @@
 #define PINO_TX 13
 #define PINO_CLK 5
 
-#define BAUD_RATE 1
+#define BAUD_RATE 20
 
 #define PINO_RTS 7
 #define PINO_CTS 6
@@ -81,8 +81,11 @@ ISR(TIMER1_COMPA_vect){
     // Escreve o próximo bit na saida
     digitalWrite(PINO_TX, frame[indice_bit]);
 
-    // Serial.print("Enviando bit: ");
-    // Serial.println(frame[indice_bit]);
+    Serial.print("Enviando bit: ");
+    Serial.println(frame[indice_bit]);
+
+    if (indice_bit == 8)
+      digitalWrite(PINO_RTS, LOW); // encerra handshake
 
     clk = HIGH;
   }
@@ -94,8 +97,6 @@ ISR(TIMER1_COMPA_vect){
     clk = LOW;
   }
 
-  digitalWrite(PINO_CLK, clk);
-
   if(indice_bit > 8){
 
     // Terminou transmissão
@@ -103,12 +104,12 @@ ISR(TIMER1_COMPA_vect){
     paraTemporizador();
 
     estado = FINALIZANDO;
-    //Serial.println("Transmissao finalizada");
+    Serial.println("Transmissao finalizada");
 
     indice_bit = 0;
-
-    digitalWrite(PINO_RTS, LOW); // encerra handshake
   }
+
+  digitalWrite(PINO_CLK, clk);
 }
 
 // -----------------------------------------------------------------
@@ -211,7 +212,6 @@ void loop () {
     case FINALIZANDO:
 
       // Receptor terminou processamento e liberou CTS
-
        if (digitalRead(PINO_CTS) == LOW) {
 
         Serial.println("CTS = 0. Comunicacao encerrada.");
